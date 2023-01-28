@@ -38,7 +38,7 @@
 		'<nav id="left_menu" class=\"navmenu navmenu-default navmenu-fixed-left offcanvas canvas-slid in\">' +
 			'<ul class=\"nav navmenu-nav\">' +	
 				'<li id="navmenu_x_wrapper" class=\"clearfix\">' +
-					'<a id="navmenu_x" aria-label=\"{{strings.runtime.buttonLabelClose}}\" href=\"javascript:;\" style=\"display:inline-block\" class="navmenu-link navmenu-submenu-link pull-right" tabindex="-1">' +
+					'<a id="navmenu_x" aria-label=\"{{strings.runtime.buttonLabelClose}}\" href=\"javascript:;\" style=\"display:inline-block\" class="navmenu-link navmenu-submenu-link pull-right menu-text" tabindex="-1">' +
 						'<i class=\"fa fa-times menu-icon\"></i>' +
 					'</a>' +
 				'</li>' +
@@ -169,6 +169,53 @@
 	}
 	
 	var buildDom = function(){
+		if(!this.settings.responsive){
+			var zoomCheck = $("<div/>", {"class": "zoomToFitChecker"});
+			$("body").append(zoomCheck);
+			var zoomToFit = zoomCheck.css("display") != "none";
+			zoomCheck.remove();
+			
+			if(zoomToFit){
+				var zoomFn = function(){
+					var ratio;
+					var courseWidth = settings.course.width;
+					var courseHeight = settings.course.height;
+
+					if((courseWidth / ($("#navbar_header").height() + courseHeight)) < $(window).width() / $(window).height()){
+						ratio = $(window).height() / ($("#navbar_header").height() + courseHeight);
+					}
+					else{
+						ratio = $(window).width() / courseWidth;
+					}
+					var bg = $("body");
+					
+					
+					if(ratio > 1){
+						bg.css({
+							"transform": "scale(" + ratio + ")",
+							"max-width": "calc(100% / " + ratio + ")",
+							"transform-origin": "left top"
+						});
+						$('html').addClass('zoomed');
+	
+					}
+					else {
+						bg.css({
+							"transform": "",
+							"transform-origin": "",
+							"max-width": ""
+						});
+						$('html').removeClass('zoomed');
+					}
+							
+
+				
+				};
+				$(window).on("resize", zoomFn);
+				$(document).on(DKI.ContentPage.events.started, zoomFn);
+			}
+		}
+
 		var pinnedChecker = $("<div id=\"pinned_checker\"></div>");	
 		$("html").append(pinnedChecker);
 		if($("html").hasClass("responsive") && pinnedChecker.css("display") == "block"){
@@ -719,41 +766,7 @@
 			contentApi.showBibliography();			
 		});
 
-		if(!this.settings.responsive){
-			var zoomCheck = $("<div/>", {"class": "zoomToFitChecker"});
-			$("body").append(zoomCheck);
-			var zoomToFit = zoomCheck.css("display") != "none";
-			zoomCheck.remove();
-			
-			if(zoomToFit){
-				var zoomFn = function(){
-					var ratio;
-					var courseWidth = settings.course.width;
-					var courseHeight = settings.course.height;
-
-					if((courseWidth / courseHeight) < $(window).width() / $(window).height()){
-						ratio = $(window).height() / courseHeight;
-					}
-					else{
-						ratio = $(window).width() / courseWidth;
-					}
-					
-
-					var bg = $("body");
-					settings.scale = ratio;
-
-					bg.css({
-						"transform": "scale(" + ratio + ")",
-						"max-width": "calc(100% / " + ratio + ")",
-						"width": "calc(100% / " + ratio + ")",
-						"transform-origin": "left top"
-					});
-
-				};
-				$(window).on("resize", zoomFn);
-				$(document).on(DKI.ContentPage.events.started, zoomFn);
-			}
-		}
+		
 	};
 	
 	/*
